@@ -1574,14 +1574,15 @@ void ProtocolHandlerImpl::NotifySessionStarted(
         security_manager_->IsPolicyCertificateDataEmpty();
 
     const bool is_certificate_expired =
-        is_certificate_empty ||
         security_manager_->IsCertificateUpdateRequired();
 
-    if (context.is_ptu_required_ && is_certificate_empty) {
-      LOG4CXX_DEBUG(logger_,
-                    "PTU for StartSessionHandler "
-                        << handler.get()
-                        << " is required and certificate data is empty");
+    if (context.is_ptu_required_ &&
+        (is_certificate_empty || is_certificate_expired)) {
+      LOG4CXX_DEBUG(
+          logger_,
+          "PTU for StartSessionHandler "
+              << handler.get()
+              << " is required and certificate data is empty or expired");
 
       sync_primitives::AutoLock lock(ptu_handlers_lock_);
       if (!is_ptu_triggered_) {
