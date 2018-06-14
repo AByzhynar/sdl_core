@@ -38,11 +38,14 @@ typedef void (*sighandler_t)(int);
 #else
 #include <signal.h>
 #endif
+#include "appMain/low_voltage_signals_handler.h"
 
 namespace utils {
 
-bool UnsibscribeFromTermination();
+bool UnsubscribeFromTermination();
 bool WaitTerminationSignals(sighandler_t sig_handler);
+bool UnsubscribeFromLowVoltageSignals(
+    const main_namespace::LowVoltageSignalsOffset& offset_data);
 
 }  //  namespace utils
 
