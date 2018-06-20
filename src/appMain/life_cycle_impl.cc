@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2017, Ford Motor Company
+* Copyright (c) 2018, Ford Motor Company
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,7 @@
 * POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "life_cycle.h"
+#include "./life_cycle_impl.h"
 #include "utils/signals.h"
 #include "utils/make_shared.h"
 #include "config_profile/profile.h"
@@ -56,7 +56,7 @@ namespace main_namespace {
 
 CREATE_LOGGERPTR_GLOBAL(logger_, "SDLMain")
 
-LifeCycle::LifeCycle(const profile::Profile& profile)
+LifeCycleImpl::LifeCycleImpl(const profile::Profile& profile)
     : transport_manager_(NULL)
     , protocol_handler_(NULL)
     , connection_handler_(NULL)
@@ -84,7 +84,7 @@ LifeCycle::LifeCycle(const profile::Profile& profile)
     , profile_(profile) {
 }
 
-bool LifeCycle::StartComponents() {
+bool LifeCycleImpl::StartComponents() {
   LOG4CXX_AUTO_TRACE(logger_);
   DCHECK(!last_state_);
   last_state_ = new resumption::LastStateImpl(profile_.app_storage_folder(),
@@ -193,14 +193,14 @@ bool LifeCycle::StartComponents() {
   return true;
 }
 
-void LifeCycle::LowVoltage() {
+void LifeCycleImpl::LowVoltage() {
   LOG4CXX_AUTO_TRACE(logger_);
   low_voltage_ = true;
   transport_manager_->Visibility(false);
   app_manager_->OnLowVoltage();
 }
 
-void LifeCycle::WakeUp() {
+void LifeCycleImpl::WakeUp() {
   LOG4CXX_AUTO_TRACE(logger_);
   DCHECK(low_voltage_ == true);
   app_manager_->OnWakeUp();
@@ -210,7 +210,7 @@ void LifeCycle::WakeUp() {
 }
 
 #ifdef MESSAGEBROKER_HMIADAPTER
-bool LifeCycle::InitMessageSystem() {
+bool LifeCycleImpl::InitMessageSystem() {
   mb_adapter_ = new hmi_message_handler::MessageBrokerAdapter(
       hmi_handler_, profile_.server_address(), profile_.server_port());
 
@@ -230,7 +230,7 @@ bool LifeCycle::InitMessageSystem() {
  * Initialize DBus component
  * @return true if success otherwise false.
  */
-bool LifeCycle::InitMessageSystem() {
+bool LifeCycleImpl::InitMessageSystem() {
   dbus_adapter_ = new hmi_message_handler::DBusMessageAdapter(hmi_handler_);
 
   hmi_handler_->AddHMIMessageAdapter(dbus_adapter_);
@@ -271,7 +271,7 @@ void sig_handler(int sig) {
 }
 }  //  namespace
 
-void LifeCycle::Run() {
+void LifeCycleImpl::Run() {
   LOG4CXX_AUTO_TRACE(logger_);
   // Register signal handlers and wait sys signals
   // from OS
@@ -280,7 +280,7 @@ void LifeCycle::Run() {
   }
 }
 
-void LifeCycle::StopComponents() {
+void LifeCycleImpl::StopComponents() {
   LOG4CXX_AUTO_TRACE(logger_);
 
   DCHECK_OR_RETURN_VOID(hmi_handler_);

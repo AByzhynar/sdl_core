@@ -31,7 +31,7 @@
 */
 
 #include "signal_handlers.h"
-#include "life_cycle.h"
+#include "./life_cycle.h"
 #include "utils/logger.h"
 
 namespace main_namespace {

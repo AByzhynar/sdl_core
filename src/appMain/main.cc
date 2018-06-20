@@ -47,7 +47,10 @@
 #include "utils/logger.h"
 
 #include "./life_cycle_impl.h"
+<<<<<<< HEAD
 #include "./low_voltage_signals_handler.h"
+=======
+>>>>>>> afc103a77... Create interface for LyfeCycle class
 #include "signal_handlers.h"
 
 #include "utils/signals.h"
