@@ -110,7 +110,7 @@ void LowVoltageSignalsHandler::HandleSignal(const int signo) {
       } else if (SIGIGNOFF_ == signo) {
         LOG4CXX_DEBUG(logger_, "Received IGNITION_OFF signal");
         state_ = SDLState::kStop;
-        kill(getpid(), SIGINT);
+        life_cycle_.IgnitionOff();
       } else if (SIGWAKEUP_ == signo) {
         LOG4CXX_DEBUG(logger_,
                       "Received WAKE_UP signal. But SDL is in active state");
@@ -127,7 +127,7 @@ void LowVoltageSignalsHandler::HandleSignal(const int signo) {
       } else if (SIGIGNOFF_ == signo) {
         LOG4CXX_DEBUG(logger_, "Received IGNITION_OFF signal");
         state_ = SDLState::kStop;
-        kill(getpid(), SIGINT);
+        life_cycle_.IgnitionOff();
       }
       break;
     case SDLState::kStop: /* nothing to do here */

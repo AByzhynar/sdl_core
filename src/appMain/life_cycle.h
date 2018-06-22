@@ -75,6 +75,12 @@ class LifeCycle {
    * from HMI
    */
   virtual void WakeUp() = 0;
+
+  /**
+   * Makes appropriate actions when Ignition Off signal received:
+   * Triggers all SDL components stop and deletion
+   */
+  virtual void IgnitionOff() = 0;
 };
 }  //  namespace main_namespace
 

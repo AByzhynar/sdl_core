@@ -115,6 +115,12 @@ class LifeCycleImpl : public LifeCycle {
    */
   void WakeUp() OVERRIDE;
 
+  /**
+   * Makes appropriate actions when Ignition Off signal received:
+   * Triggers all SDL components stop and deletion
+   */
+  void IgnitionOff() OVERRIDE;
+
  private:
   transport_manager::TransportManagerImpl* transport_manager_;
   protocol_handler::ProtocolHandlerImpl* protocol_handler_;

@@ -200,6 +200,11 @@ void LifeCycleImpl::LowVoltage() {
   app_manager_->OnLowVoltage();
 }
 
+void LifeCycleImpl::IgnitionOff() {
+  LOG4CXX_AUTO_TRACE(logger_);
+  kill(getpid(), SIGINT);
+}
+
 void LifeCycleImpl::WakeUp() {
   LOG4CXX_AUTO_TRACE(logger_);
   DCHECK(low_voltage_ == true);
