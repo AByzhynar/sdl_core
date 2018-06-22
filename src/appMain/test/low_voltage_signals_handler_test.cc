@@ -30,8 +30,12 @@
 * POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "./mock_life_cycle.h"
 #include "appMain/low_voltage_signals_handler.h"
+
+#include <memory>
+#include "appMain/test/mock_life_cycle.h"
+#include "config_profile/profile.h"
+#include "utils/macro.h"
 #include "gtest/gtest.h"
 
 namespace test {
@@ -39,8 +43,83 @@ namespace test {
 class LowVoltageSignalsHandlerTest : public ::testing::Test {
  protected:
   void SetUp() OVERRIDE {
+    profile_.set_config_file_name("smartDeviceLink.ini");
+    signals_offset = {profile_.low_voltage_signal_offset(),
+                      profile_.wake_up_signal_offset(),
+                      profile_.ignition_off_signal_offset()};
 
+    low_voltage_signals_handler_ =
+        std::unique_ptr<main_namespace::LowVoltageSignalsHandler>(
+            new main_namespace::LowVoltageSignalsHandler(mock_life_cycle_,
+                                                         signals_offset));
   }
+
+  profile::Profile profile_;
+  main_namespace::LowVoltageSignalsOffset signals_offset;
+  std::unique_ptr<main_namespace::LowVoltageSignalsHandler>
+      low_voltage_signals_handler_;
+  main_namespace::MockLifeCycle mock_life_cycle_;
 };
 
+TEST_F(LowVoltageSignalsHandlerTest,
+       LowVoltageSignalReceived_ExpectLifeCycleLowVoltageCall) {
+  // Check that initial SDL state is running
+  EXPECT_EQ(main_namespace::SDLState::kRun,
+            low_voltage_signals_handler_->get_current_sdl_state());
+  // Set expectation after LOW VOLTAGE signal
+  EXPECT_CALL(mock_life_cycle_, LowVoltage());
+  const int low_voltage_signo =
+      low_voltage_signals_handler_->low_voltage_signo();
+  // Emulate LOW VOLTAGE signal receipt and handling
+  low_voltage_signals_handler_->HandleSignal(low_voltage_signo);
+  // Check that SDL is in sleep state after LOW VOLTAGE
+  EXPECT_EQ(main_namespace::SDLState::kSleep,
+            low_voltage_signals_handler_->get_current_sdl_state());
+}
+
+TEST_F(LowVoltageSignalsHandlerTest,
+       WakeUpSignalReceived_ExpectLifeCycleWakeUpCall) {
+  // Check that initial SDL state is running
+  EXPECT_EQ(main_namespace::SDLState::kRun,
+            low_voltage_signals_handler_->get_current_sdl_state());
+  EXPECT_CALL(mock_life_cycle_, LowVoltage());
+  const int low_voltage_signo =
+      low_voltage_signals_handler_->low_voltage_signo();
+  // Emulate LOW VOLTAGE signals receipt and handling
+  low_voltage_signals_handler_->HandleSignal(low_voltage_signo);
+  // Check that SDL is in sleep state after LOW VOLTAGE
+  EXPECT_EQ(main_namespace::SDLState::kSleep,
+            low_voltage_signals_handler_->get_current_sdl_state());
+  EXPECT_CALL(mock_life_cycle_, WakeUp());
+  const int wake_up_signo = low_voltage_signals_handler_->wake_up_signo();
+  // Emulate WAKE UP signal receipt and handling
+  low_voltage_signals_handler_->HandleSignal(wake_up_signo);
+  // Check that SDL is in running state after WAKE UP
+  EXPECT_EQ(main_namespace::SDLState::kRun,
+            low_voltage_signals_handler_->get_current_sdl_state());
+}
+
+TEST_F(LowVoltageSignalsHandlerTest,
+       IgnitionOffSignalReceived_ExpectLifeCycleIgnitionOffCall) {
+  // Check that initial SDL state is running
+  EXPECT_EQ(main_namespace::SDLState::kRun,
+            low_voltage_signals_handler_->get_current_sdl_state());
+  EXPECT_CALL(mock_life_cycle_, LowVoltage());
+  const int low_voltage_signo =
+      low_voltage_signals_handler_->low_voltage_signo();
+  // Emulate LOW VOLTAGE signals receipt and handling
+  low_voltage_signals_handler_->HandleSignal(low_voltage_signo);
+  // Check that SDL is in sleep state after LOW VOLTAGE
+  EXPECT_EQ(main_namespace::SDLState::kSleep,
+            low_voltage_signals_handler_->get_current_sdl_state());
+  EXPECT_CALL(mock_life_cycle_, IgnitionOff());
+  const int ignition_off_signo =
+      low_voltage_signals_handler_->ignition_off_signo();
+
+  // Emulate IGNITION OFF signal receipt and handling
+  low_voltage_signals_handler_->HandleSignal(ignition_off_signo);
+  // Check that SDL is in stopped state after IGNITION OFF
+  EXPECT_EQ(main_namespace::SDLState::kStop,
+            low_voltage_signals_handler_->get_current_sdl_state());
+}
 }  //  namespace test

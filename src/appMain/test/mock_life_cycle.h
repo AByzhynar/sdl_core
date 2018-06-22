@@ -46,6 +46,7 @@ class MockLifeCycle : public LifeCycle {
   MOCK_METHOD0(StopComponents, void());
   MOCK_METHOD0(LowVoltage, void());
   MOCK_METHOD0(WakeUp, void());
+  MOCK_METHOD0(IgnitionOff, void());
 };
 
 }  // namespace main_namespace

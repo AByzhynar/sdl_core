@@ -30,10 +30,10 @@
 
 include_directories (
   ${GMOCK_INCLUDE_DIRECTORY}
-  ${CMAKE_SOURCE_DIR}/src
 )
 
 set(testSources
+  $<TARGET_OBJECTS:LowVoltageHandlerObjLibrary>
   ${CMAKE_SOURCE_DIR}/src/appMain/test/low_voltage_signals_handler_test.cc
 )
 
