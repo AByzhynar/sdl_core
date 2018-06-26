@@ -30,7 +30,7 @@
 * POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "./life_cycle_impl.h"
+#include "appMain/life_cycle_impl.h"
 #include "utils/signals.h"
 #include "utils/make_shared.h"
 #include "config_profile/profile.h"
@@ -48,7 +48,7 @@
 #include "utils/log_message_loop_thread.h"
 #endif  // ENABLE_LOG
 
-#include "low_voltage_signals_handler.h"
+#include "appMain/low_voltage_signals_handler.h"
 
 using threads::Thread;
 
@@ -61,7 +61,6 @@ LifeCycleImpl::LifeCycleImpl(const profile::Profile& profile)
     , protocol_handler_(NULL)
     , connection_handler_(NULL)
     , app_manager_(NULL)
-    , low_voltage_signals_handler_(NULL)
 #ifdef ENABLE_SECURITY
     , crypto_manager_(NULL)
     , security_manager_(NULL)
@@ -174,28 +173,18 @@ bool LifeCycleImpl::StartComponents() {
   // start transport manager
   transport_manager_->Visibility(true);
 
-  LowVoltageSignalsOffset signals_offset;
-  signals_offset.low_voltage_signal_offset =
-      profile_.low_voltage_signal_offset();
-  signals_offset.wake_up_signal_offset = profile_.wake_up_signal_offset();
-  signals_offset.ignition_off_signal_offset =
-      profile_.ignition_off_signal_offset();
+  LowVoltageSignalsOffset signals_offset{profile_.low_voltage_signal_offset(),
+                                         profile_.wake_up_signal_offset(),
+                                         profile_.ignition_off_signal_offset()};
 
-  low_voltage_signals_handler_ =
-      new LowVoltageSignalsHandler(*this, signals_offset);
-
-  DCHECK(low_voltage_signals_handler_);
-  if (!low_voltage_signals_handler_->Init()) {
-    LOG4CXX_ERROR(logger_, "Low Voltage Signals handler init failed.");
-    return false;
-  }
+  low_voltage_signals_handler_.reset(
+      new LowVoltageSignalsHandler(*this, signals_offset));
 
   return true;
 }
 
 void LifeCycleImpl::LowVoltage() {
   LOG4CXX_AUTO_TRACE(logger_);
-  low_voltage_ = true;
   transport_manager_->Visibility(false);
   app_manager_->OnLowVoltage();
 }
@@ -207,11 +196,9 @@ void LifeCycleImpl::IgnitionOff() {
 
 void LifeCycleImpl::WakeUp() {
   LOG4CXX_AUTO_TRACE(logger_);
-  DCHECK(low_voltage_ == true);
   app_manager_->OnWakeUp();
   transport_manager_->Reinit();
   transport_manager_->Visibility(true);
-  low_voltage_ = false;
 }
 
 #ifdef MESSAGEBROKER_HMIADAPTER
@@ -355,9 +342,8 @@ void LifeCycleImpl::StopComponents() {
   app_manager_ = NULL;
 
   LOG4CXX_INFO(logger_, "Destroying Low Voltage Signals Handler.");
-  DCHECK(low_voltage_signals_handler_);
-  delete low_voltage_signals_handler_;
-  low_voltage_signals_handler_ = NULL;
+  low_voltage_signals_handler_.reset();
+
   LOG4CXX_INFO(logger_, "Destroying HMI Message Handler and MB adapter.");
 
 #ifdef DBUS_HMIADAPTER

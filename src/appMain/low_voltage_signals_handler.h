@@ -34,6 +34,7 @@
 #define SRC_APPMAIN_LOW_VOLTAGE_SIGNALS_HANDLER_H_
 
 #include <unistd.h>
+#include <memory>
 #include "utils/threads/thread_delegate.h"
 #include "utils/threads/thread.h"
 
@@ -56,32 +57,67 @@ class NotificationThreadDelegate;
  */
 enum class SDLState { kRun, kSleep, kStop };
 
+/**
+ * @brief Class which handles real-time POSIX signals
+ * dedicated for LOW VOLTAGE functionality
+ */
 class LowVoltageSignalsHandler {
  public:
-
   /**
    * @brief Constructor
+   * @param life_cycle - life_cycle object to interact with other system
+   * components
+   * @param offset_data offset data needed to calculate correct SIGNAL numbers
+   * used for LOW VOLTAGE functionality (as offset from SIGRTMIN)
    */
   LowVoltageSignalsHandler(LifeCycle& life_cycle,
                            const LowVoltageSignalsOffset& offset_data);
   /**
-   * @brief Creates all parts of LowVoltageSignalsHandler
+   * @brief Handles RT signals related to Low Voltage functionality
    */
-  bool Init();
   void HandleSignal(const int signo);
+
+  /**
+   * @brief Checks if SDL is in active state
+   * therefore not yet in sleep state due to Low Voltage event
+   */
   bool IsActive() const;
+
+  /**
+   * @brief Returns current LOW VOLTAGE SDL state
+   */
   SDLState get_current_sdl_state() const;
+
+  /**
+   * @brief Returns LOW VOLTAGE signal number
+   */
   int low_voltage_signo() const;
+
+  /**
+   * @brief Returns WAKE UP signal number
+   */
   int wake_up_signo() const;
+
+  /**
+   * @brief Returns IGNITION OFF signal number
+   */
   int ignition_off_signo() const;
+
+  /**
+   * @brief Destructor
+   */
   ~LowVoltageSignalsHandler();
 
  private:
+  /**
+   * @brief Destroys all parts of Low Voltage signals handler
+   * Invoked from destructor
+   */
   void Destroy();
   SDLState state_;
-  NotificationThreadDelegate* notifications_delegate_;
-  LifeCycle& life_cycle_;
+  std::unique_ptr<NotificationThreadDelegate> notifications_delegate_;
   threads::Thread* signals_handler_thread_;
+  LifeCycle& life_cycle_;
   int SIGLOWVOLTAGE_;
   int SIGWAKEUP_;
   int SIGIGNOFF_;

@@ -32,9 +32,12 @@
 
 #ifndef SRC_APPMAIN_LIFE_CYCLE_IMPL_H_
 #define SRC_APPMAIN_LIFE_CYCLE_IMPL_H_
-#include "./life_cycle.h"
+
+#include "appMain/life_cycle.h"
+
 #include <unistd.h>
 #include <thread>
+#include <memory>
 #include "utils/macro.h"
 #include "utils/shared_ptr.h"
 
@@ -126,7 +129,7 @@ class LifeCycleImpl : public LifeCycle {
   protocol_handler::ProtocolHandlerImpl* protocol_handler_;
   connection_handler::ConnectionHandlerImpl* connection_handler_;
   application_manager::ApplicationManagerImpl* app_manager_;
-  LowVoltageSignalsHandler* low_voltage_signals_handler_;
+  std::unique_ptr<LowVoltageSignalsHandler> low_voltage_signals_handler_;
 #ifdef ENABLE_SECURITY
   security_manager::CryptoManager* crypto_manager_;
   security_manager::SecurityManager* security_manager_;
@@ -149,7 +152,6 @@ class LifeCycleImpl : public LifeCycle {
 #endif  // MESSAGEBROKER_HMIADAPTER
 
   const profile::Profile& profile_;
-  bool low_voltage_;
   DISALLOW_COPY_AND_ASSIGN(LifeCycleImpl);
 };
 }  //  namespace main_namespace

@@ -116,13 +116,10 @@ int32_t main(int32_t argc, char** argv) {
 
   // Reading profile offsets for real-time signals dedicated
   // for Low Voltage functionality handling
-  main_namespace::LowVoltageSignalsOffset signals_offset;
-  signals_offset.low_voltage_signal_offset =
-      profile_instance.low_voltage_signal_offset();
-  signals_offset.wake_up_signal_offset =
-      profile_instance.wake_up_signal_offset();
-  signals_offset.ignition_off_signal_offset =
-      profile_instance.ignition_off_signal_offset();
+  main_namespace::LowVoltageSignalsOffset signals_offset{
+      profile_instance.low_voltage_signal_offset(),
+      profile_instance.wake_up_signal_offset(),
+      profile_instance.ignition_off_signal_offset()};
 
   // Unsubscribe once for all threads
   // except specific thread dedicated for

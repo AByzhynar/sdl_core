@@ -35,6 +35,11 @@
 
 namespace main_namespace {
 
+/**
+ * Class responsible for all system components creation,
+ * start, stop, suspend and restore
+ */
+
 class LifeCycle {
  public:
   virtual ~LifeCycle() {}

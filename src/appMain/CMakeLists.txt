@@ -75,11 +75,15 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src
 )
 
+# Create object library
+add_library("LowVoltageHandlerObjLibrary" OBJECT ${CMAKE_CURRENT_SOURCE_DIR}/low_voltage_signals_handler.cc
+)
+
 set (SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/main.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/life_cycle_impl.cc
-  ${CMAKE_CURRENT_SOURCE_DIR}/low_voltage_signals_handler.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/signal_handlers.cc
+  $<TARGET_OBJECTS:LowVoltageHandlerObjLibrary>
 )
 
 cmake_policy(PUSH)
@@ -258,6 +262,5 @@ else()
 endif()
 
 if(BUILD_TESTS)
-  add_library("LowVoltageHandlerLibrary" ${CMAKE_CURRENT_SOURCE_DIR}/low_voltage_signals_handler.cc)
   add_subdirectory(test)
 endif()

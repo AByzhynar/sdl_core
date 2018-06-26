@@ -31,41 +31,29 @@
  */
 
 #include "low_voltage_signals_handler.h"
+
 #include <signal.h>
-#include "life_cycle.h"
+#include <type_traits>
+#include "appMain/life_cycle.h"
 #include "utils/logger.h"
+#include "utils/typed_enum_print.h"
 #include "config_profile/profile.h"
 
 namespace main_namespace {
-
-namespace {
-// Generic function to be able to log enum class values
-template <typename T>
-std::ostream& operator<<(
-    typename std::enable_if<std::is_enum<T>::value, std::ostream>::type& stream,
-    const T& e) {
-  return stream << static_cast<typename std::underlying_type<T>::type>(e);
-}
-}  // namespace
 
 CREATE_LOGGERPTR_GLOBAL(logger_, "LowVoltageSignalsHandler")
 
 LowVoltageSignalsHandler::LowVoltageSignalsHandler(
     LifeCycle& life_cycle, const LowVoltageSignalsOffset& offset_data)
     : state_(SDLState::kRun)
-    , notifications_delegate_(nullptr)
+    , notifications_delegate_(new NotificationThreadDelegate(*this))
+    , signals_handler_thread_(threads::CreateThread(
+          "LV_SIGNALS_HANDLER_THREAD", notifications_delegate_.get()))
     , life_cycle_(life_cycle)
-    , signals_handler_thread_(nullptr)
     , SIGLOWVOLTAGE_(offset_data.low_voltage_signal_offset + SIGRTMIN)
     , SIGWAKEUP_(offset_data.wake_up_signal_offset + SIGRTMIN)
-    , SIGIGNOFF_(offset_data.ignition_off_signal_offset + SIGRTMIN) {}
-
-bool LowVoltageSignalsHandler::Init() {
-  notifications_delegate_ = new NotificationThreadDelegate(*this);
-  signals_handler_thread_ = threads::CreateThread("LV_SIGNALS_HANDLER_THREAD",
-                                                  notifications_delegate_);
+    , SIGIGNOFF_(offset_data.ignition_off_signal_offset + SIGRTMIN) {
   signals_handler_thread_->start();
-  return true;
 }
 
 SDLState LowVoltageSignalsHandler::get_current_sdl_state() const {
@@ -89,7 +77,7 @@ void LowVoltageSignalsHandler::Destroy() {
   if (signals_handler_thread_) {
     signals_handler_thread_->join();
   }
-  delete notifications_delegate_;
+  notifications_delegate_.reset();
   threads::DeleteThread(signals_handler_thread_);
 }
 
@@ -98,6 +86,7 @@ LowVoltageSignalsHandler::~LowVoltageSignalsHandler() {
 }
 
 void LowVoltageSignalsHandler::HandleSignal(const int signo) {
+  using utils::operator<<;
   LOG4CXX_DEBUG(logger_, "Received Signal: " << signo);
   LOG4CXX_DEBUG(logger_, "Current state is : " << get_current_sdl_state());
 
@@ -105,12 +94,13 @@ void LowVoltageSignalsHandler::HandleSignal(const int signo) {
     case SDLState::kRun:
       if (SIGLOWVOLTAGE_ == signo) {
         LOG4CXX_DEBUG(logger_, "Received LOW_VOLTAGE signal");
-        life_cycle_.LowVoltage();
         state_ = SDLState::kSleep;
+        life_cycle_.LowVoltage();
       } else if (SIGIGNOFF_ == signo) {
-        LOG4CXX_DEBUG(logger_, "Received IGNITION_OFF signal");
-        state_ = SDLState::kStop;
-        life_cycle_.IgnitionOff();
+        LOG4CXX_DEBUG(
+            logger_,
+            "Received IGNITION_OFF signal. But SDL is in active state");
+        // Do nothing
       } else if (SIGWAKEUP_ == signo) {
         LOG4CXX_DEBUG(logger_,
                       "Received WAKE_UP signal. But SDL is in active state");
@@ -122,8 +112,8 @@ void LowVoltageSignalsHandler::HandleSignal(const int signo) {
     case SDLState::kSleep:
       if (SIGWAKEUP_ == signo) {
         LOG4CXX_DEBUG(logger_, "Received WAKE UP signal");
-        life_cycle_.WakeUp();
         state_ = SDLState::kRun;
+        life_cycle_.WakeUp();
       } else if (SIGIGNOFF_ == signo) {
         LOG4CXX_DEBUG(logger_, "Received IGNITION_OFF signal");
         state_ = SDLState::kStop;
@@ -151,7 +141,10 @@ void NotificationThreadDelegate::threadMain() {
     int signo = 0;
     const int err = sigwait(&lv_mask, &signo);
     if (0 != err) {
-      LOG4CXX_ERROR(logger_, "sigwait function call error!");
+      LOG4CXX_ERROR(
+          logger_,
+          "Sigwait() error! Signals set contains an invalid signal number!");
+      continue;
     }
     low_voltage_signals_handler_.HandleSignal(signo);
   }
@@ -159,6 +152,7 @@ void NotificationThreadDelegate::threadMain() {
 
 void NotificationThreadDelegate::exitThreadMain() {
   LOG4CXX_AUTO_TRACE(logger_);
+  ThreadDelegate::exitThreadMain();
 }
 
 }  // namespace main_namespace
