@@ -90,35 +90,61 @@ void LowVoltageSignalsHandler::HandleSignal(const int signo) {
   LOG4CXX_DEBUG(logger_, "Received Signal: " << signo);
   LOG4CXX_DEBUG(logger_, "Current state is : " << get_current_sdl_state());
 
+  auto handle_run_state = [this, signo]() {
+
+    if (SIGLOWVOLTAGE_ == signo) {
+      LOG4CXX_DEBUG(logger_, "Received LOW_VOLTAGE signal");
+      state_ = SDLState::kSleep;
+      life_cycle_.LowVoltage();
+      return;
+    }
+
+    if (SIGIGNOFF_ == signo) {
+      LOG4CXX_DEBUG(logger_,
+                    "Received IGNITION_OFF signal. But SDL is in active state");
+      // Do nothing
+      return;
+    }
+    if (SIGWAKEUP_ == signo) {
+      LOG4CXX_DEBUG(logger_,
+                    "Received WAKE_UP signal. But SDL is in active state");
+      // Do nothing
+      return;
+    }
+    LOG4CXX_DEBUG(logger_, "Received UNKNOWN signal");
+  };
+
+  auto handle_sleep_state = [this, signo]() {
+
+    if (SIGWAKEUP_ == signo) {
+      LOG4CXX_DEBUG(logger_, "Received WAKE UP signal");
+      state_ = SDLState::kRun;
+      life_cycle_.WakeUp();
+      return;
+    }
+
+    if (SIGIGNOFF_ == signo) {
+      LOG4CXX_DEBUG(logger_, "Received IGNITION_OFF signal");
+      state_ = SDLState::kStop;
+      life_cycle_.IgnitionOff();
+      return;
+    }
+    if (SIGLOWVOLTAGE_ == signo) {
+      LOG4CXX_DEBUG(
+          logger_,
+          "Received LOW VOLTAGE signal. But SDL is already in sleep state");
+      // Do nothing
+      return;
+    }
+    LOG4CXX_DEBUG(logger_, "Received UNKNOWN signal");
+  };
+
   switch (state_) {
     case SDLState::kRun:
-      if (SIGLOWVOLTAGE_ == signo) {
-        LOG4CXX_DEBUG(logger_, "Received LOW_VOLTAGE signal");
-        state_ = SDLState::kSleep;
-        life_cycle_.LowVoltage();
-      } else if (SIGIGNOFF_ == signo) {
-        LOG4CXX_DEBUG(
-            logger_,
-            "Received IGNITION_OFF signal. But SDL is in active state");
-        // Do nothing
-      } else if (SIGWAKEUP_ == signo) {
-        LOG4CXX_DEBUG(logger_,
-                      "Received WAKE_UP signal. But SDL is in active state");
-        // Do nothing
-      } else {
-        LOG4CXX_DEBUG(logger_, "Received UNKNOWN signal");
-      }
+      handle_run_state();
       break;
     case SDLState::kSleep:
-      if (SIGWAKEUP_ == signo) {
-        LOG4CXX_DEBUG(logger_, "Received WAKE UP signal");
-        state_ = SDLState::kRun;
-        life_cycle_.WakeUp();
-      } else if (SIGIGNOFF_ == signo) {
-        LOG4CXX_DEBUG(logger_, "Received IGNITION_OFF signal");
-        state_ = SDLState::kStop;
-        life_cycle_.IgnitionOff();
-      }
+      handle_sleep_state();
       break;
     case SDLState::kStop: /* nothing to do here */
       LOG4CXX_DEBUG(logger_, "SDL is in stopping state");
