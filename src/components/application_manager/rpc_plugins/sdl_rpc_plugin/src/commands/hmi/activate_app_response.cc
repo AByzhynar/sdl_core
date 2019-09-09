@@ -53,7 +53,7 @@ ActivateAppResponse::ActivateAppResponse(
 ActivateAppResponse::~ActivateAppResponse() {}
 
 void ActivateAppResponse::Run() {
-  LOG4CXX_TRACE(logger_, "enter");
+  LOG4CXX_TRACE(logger_, "ActivateAppResponse::Run");
   event_engine::Event event(
       hmi_apis::FunctionID::BasicCommunication_ActivateApp);
   event.set_smart_object(*message_);

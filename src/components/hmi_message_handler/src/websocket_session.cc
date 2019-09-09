@@ -52,6 +52,7 @@ WebsocketSession::WebsocketSession(boost::asio::ip::tcp::socket socket,
 WebsocketSession::~WebsocketSession() {}
 
 void WebsocketSession::Accept() {
+  LOG_WITH_LEVEL(ws_logger_, ::log4cxx::Level::getTrace(), "Enter");
   ws_.async_accept(boost::asio::bind_executor(
       strand_,
       std::bind(
@@ -59,6 +60,7 @@ void WebsocketSession::Accept() {
 }
 
 void WebsocketSession::Shutdown() {
+  LOG_WITH_LEVEL(ws_logger_, ::log4cxx::Level::getTrace(), "Enter");
   shutdown_ = true;
   thread_delegate_->SetShutdown();
   thread_->join();

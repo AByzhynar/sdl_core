@@ -265,8 +265,10 @@ void StateControllerImpl::SetRegularState(ApplicationSharedPtr app,
   // SDL should send BC.ActivateApp for main window during resumption
   if (mobile_apis::PredefinedWindows::DEFAULT_WINDOW == window_id &&
       mobile_apis::HMILevel::HMI_FULL == state->hmi_level()) {
+    LOG4CXX_DEBUG(logger_, "Sending BC.ActivateApp..");
     SetRegularState(app, window_id, state, true);
   } else {
+    LOG4CXX_DEBUG(logger_, "Ignoring BC.ActivateApp..");
     SetRegularState(app, window_id, state, false);
   }
 }
@@ -1056,6 +1058,7 @@ void StateControllerImpl::DeactivateApp(ApplicationSharedPtr app,
 
 void StateControllerImpl::OnHMIResponse(
     const smart_objects::SmartObject& message) {
+  LOG4CXX_AUTO_TRACE(logger_);
   const hmi_apis::Common_Result::eType code =
       static_cast<hmi_apis::Common_Result::eType>(
           message[strings::params][hmi_response::code].asInt());

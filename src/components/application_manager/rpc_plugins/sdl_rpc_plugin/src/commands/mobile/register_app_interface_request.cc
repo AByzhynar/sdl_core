@@ -933,6 +933,8 @@ void RegisterAppInterfaceRequest::SendChangeRegistrationOnHMI(
 
 void RegisterAppInterfaceRequest::SendOnAppRegisteredNotificationToHMI(
     ApplicationConstSharedPtr app, bool resumption, bool need_restore_vr) {
+  LOG4CXX_AUTO_TRACE(logger_);
+
   using namespace smart_objects;
   SmartObjectSPtr notification = std::make_shared<SmartObject>(SmartType_Map);
   if (!notification) {

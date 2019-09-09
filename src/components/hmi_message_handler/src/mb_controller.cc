@@ -62,6 +62,7 @@ CMessageBrokerController::~CMessageBrokerController() {
 }
 
 bool CMessageBrokerController::StartListener() {
+  LOG_WITH_LEVEL(mb_logger_, ::log4cxx::Level::getTrace(), "Enter");
   boost::system::error_code error;
   acceptor_.open(endpoint_.protocol(), error);
   if (error) {
@@ -92,11 +93,13 @@ bool CMessageBrokerController::StartListener() {
 }
 
 bool CMessageBrokerController::Run() {
+  LOG_WITH_LEVEL(mb_logger_, ::log4cxx::Level::getTrace(), "Enter");
   if (acceptor_.is_open() && !shutdown_) {
     acceptor_.async_accept(socket_,
                            std::bind(&CMessageBrokerController::StartSession,
                                      this,
                                      std::placeholders::_1));
+    ioc_.restart();
     ioc_.run();
     return true;
   }
@@ -104,6 +107,7 @@ bool CMessageBrokerController::Run() {
 }
 
 void CMessageBrokerController::WaitForConnection() {
+  LOG_WITH_LEVEL(mb_logger_, ::log4cxx::Level::getTrace(), "Enter");
   if (acceptor_.is_open() && !shutdown_) {
     acceptor_.async_accept(socket_,
                            std::bind(&CMessageBrokerController::StartSession,
@@ -113,6 +117,7 @@ void CMessageBrokerController::WaitForConnection() {
 }
 
 void CMessageBrokerController::StartSession(boost::system::error_code ec) {
+  LOG_WITH_LEVEL(mb_logger_, ::log4cxx::Level::getTrace(), "Enter");
   if (ec) {
     std::string str_err = "ErrorMessage: " + ec.message();
     LOG4CXX_ERROR(mb_logger_, str_err);
@@ -120,6 +125,9 @@ void CMessageBrokerController::StartSession(boost::system::error_code ec) {
     return;
   }
   if (shutdown_) {
+    LOG_WITH_LEVEL(mb_logger_,
+                   ::log4cxx::Level::getTrace(),
+                   "Exit due to shutting down...");
     return;
   }
   std::shared_ptr<WebsocketSession> ws_ptr =
@@ -215,7 +223,47 @@ bool CMessageBrokerController::Connect() {
   return true;
 }
 
+void CMessageBrokerController::suspendReceivingThread() {
+  LOG_WITH_LEVEL(mb_logger_, ::log4cxx::Level::getTrace(), "Enter");
+
+  mConnectionListLock.Acquire();
+  std::vector<std::shared_ptr<hmi_message_handler::WebsocketSession> >::iterator
+      it;
+  for (it = mConnectionList.begin(); it != mConnectionList.end();) {
+    it = mConnectionList.erase(it);
+  }
+  mConnectionListLock.Release();
+
+  boost::system::error_code ec;
+  socket_.close();
+  acceptor_.cancel(ec);
+  if (ec) {
+    std::string str_err = "ErrorMessage Cancel: " + ec.message();
+    LOG4CXX_ERROR(mb_logger_, str_err);
+  }
+  acceptor_.close(ec);
+  if (ec) {
+    std::string str_err = "ErrorMessage Close: " + ec.message();
+  }
+  ioc_.stop();
+}
+
+void CMessageBrokerController::resumeReceivingThread() {
+  LOG_WITH_LEVEL(mb_logger_, ::log4cxx::Level::getTrace(), "Enter");
+  acceptor_ = boost::asio::ip::tcp::acceptor(ioc_);
+  socket_ = boost::asio::ip::tcp::socket(ioc_);
+  LOG_WITH_LEVEL(
+      mb_logger_, ::log4cxx::Level::getTrace(), "Address: " << address_);
+  LOG_WITH_LEVEL(mb_logger_, ::log4cxx::Level::getTrace(), "Port: " << port_);
+  endpoint_ = {boost::asio::ip::make_address(address_),
+               static_cast<unsigned short>(port_)};
+  //  socket_.connect(endpoint_);
+  StartListener();
+  Run();
+}
+
 void CMessageBrokerController::exitReceivingThread() {
+  LOG_WITH_LEVEL(mb_logger_, ::log4cxx::Level::getTrace(), "Enter");
   shutdown_ = true;
   mConnectionListLock.Acquire();
   std::vector<std::shared_ptr<hmi_message_handler::WebsocketSession> >::iterator

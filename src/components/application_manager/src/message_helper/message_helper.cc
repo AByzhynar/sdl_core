@@ -1695,6 +1695,7 @@ bool MessageHelper::CreateHMIApplicationStruct(
     const policy::PolicyHandlerInterface& policy_handler,
     ns_smart_device_link::ns_smart_objects::SmartObject* output,
     ApplicationManager& app_mngr) {
+  LOG4CXX_AUTO_TRACE(logger_);
   using ns_smart_device_link::ns_smart_objects::SmartObject;
   DCHECK_OR_RETURN(output, false);
   SmartObject& message = *output;

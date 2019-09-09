@@ -115,6 +115,10 @@ class CMessageBrokerController
 
   void exitReceivingThread();
 
+  void suspendReceivingThread();
+
+  void resumeReceivingThread();
+
   virtual void processResponse(std::string method, Json::Value& root) = 0;
 
   virtual void processRequest(Json::Value& root) = 0;

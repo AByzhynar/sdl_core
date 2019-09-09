@@ -64,6 +64,7 @@ bool NotificationToHMI::CleanUp() {
 void NotificationToHMI::Run() {}
 
 void NotificationToHMI::SendNotification() {
+  LOG4CXX_AUTO_TRACE(logger_);
   (*message_)[strings::params][strings::protocol_type] = hmi_protocol_type_;
   (*message_)[strings::params][strings::protocol_version] = protocol_version_;
   rpc_service_.SendMessageToHMI(message_);
