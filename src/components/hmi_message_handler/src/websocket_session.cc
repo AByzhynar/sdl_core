@@ -114,6 +114,12 @@ void WebsocketSession::sendJsonMessage(Json::Value& message) {
   Send(str_msg, message);
 }
 
+void WebsocketSession::ClearBuffers() {
+  buffer_.consume(buffer_.size());
+  send_buffer_.consume(send_buffer_.size());
+  m_receivingBuffer.clear();
+}
+
 void WebsocketSession::Read(boost::system::error_code ec,
                             std::size_t bytes_transferred) {
   boost::ignore_unused(bytes_transferred);

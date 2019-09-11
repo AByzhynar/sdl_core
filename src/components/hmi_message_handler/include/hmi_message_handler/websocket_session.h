@@ -104,6 +104,8 @@ class WebsocketSession : public std::enable_shared_from_this<WebsocketSession> {
 
   void Shutdown();
 
+  void ClearBuffers();
+
   bool IsShuttingDown();
 
   void Recv(boost::system::error_code ec);
