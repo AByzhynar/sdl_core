@@ -189,12 +189,30 @@ bool LifeCycleImpl::StartComponents() {
 
 void LifeCycleImpl::LowVoltage() {
   LOG4CXX_AUTO_TRACE(logger_);
+  app_manager_->OnLowVoltage();
 
 #ifdef MESSAGEBROKER_HMIADAPTER
-  mb_adapter_->suspendReceivingThread();
+  if (mb_adapter_) {
+    DCHECK_OR_RETURN_VOID(hmi_handler_);
+    hmi_handler_->RemoveHMIMessageAdapter(mb_adapter_);
+    mb_adapter_->unregisterController();
+    mb_adapter_->exitReceivingThread();
+    if (mb_adapter_thread_ != NULL) {
+      mb_adapter_thread_->join();
+    }
+    delete mb_adapter_;
+    mb_adapter_ = NULL;
+    delete mb_adapter_thread_;
+    mb_adapter_thread_ = NULL;
+  }
+  LOG4CXX_INFO(logger_, "Destroying Message Broker");
 #endif  // MESSAGEBROKER_HMIADAPTER
+
+  //#ifdef MESSAGEBROKER_HMIADAPTER
+  //  mb_adapter_->suspendReceivingThread();
+
+  //#endif  // MESSAGEBROKER_HMIADAPTER
   transport_manager_->Visibility(false);
-  app_manager_->OnLowVoltage();
 }
 
 void LifeCycleImpl::IgnitionOff() {
@@ -204,9 +222,10 @@ void LifeCycleImpl::IgnitionOff() {
 
 void LifeCycleImpl::WakeUp() {
   LOG4CXX_AUTO_TRACE(logger_);
-#ifdef MESSAGEBROKER_HMIADAPTER
-  mb_adapter_->resumeReceivingThread();
-#endif  // MESSAGEBROKER_HMIADAPTER
+  //#ifdef MESSAGEBROKER_HMIADAPTER
+  //  mb_adapter_->resumeReceivingThread();
+  //#endif  // MESSAGEBROKER_HMIADAPTER
+
   app_manager_->OnWakeUp();
   transport_manager_->Reinit();
   transport_manager_->Visibility(true);

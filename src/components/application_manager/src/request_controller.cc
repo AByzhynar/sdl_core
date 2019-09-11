@@ -368,6 +368,8 @@ void RequestController::updateRequestTimeout(const uint32_t& app_id,
 
 void RequestController::OnLowVoltage() {
   LOG4CXX_AUTO_TRACE(logger_);
+  terminateAllHMIRequests();
+  terminateAllMobileRequests();
   is_low_voltage_ = true;
 }
 

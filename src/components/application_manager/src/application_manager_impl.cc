@@ -3170,9 +3170,9 @@ bool ApplicationManagerImpl::is_audio_pass_thru_active() const {
 void ApplicationManagerImpl::OnLowVoltage() {
   LOG4CXX_AUTO_TRACE(logger_);
   is_low_voltage_ = true;
+  request_ctrl_.OnLowVoltage();
   resume_ctrl_->SaveLowVoltageTime();
   resume_ctrl_->StopSavePersistentDataTimer();
-  request_ctrl_.OnLowVoltage();
 }
 
 bool ApplicationManagerImpl::IsLowVoltage() const {

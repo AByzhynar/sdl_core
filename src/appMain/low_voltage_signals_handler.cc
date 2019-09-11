@@ -120,6 +120,7 @@ void LowVoltageSignalsHandler::HandleSignal(const int signo) {
       LOG4CXX_DEBUG(logger_, "Child PID: " << cpid_);
       utils::Signals::WaitPid(cpid_, nullptr, 0);
       LOG4CXX_DEBUG(logger_, "Child process: " << cpid_ << " is stopped");
+      life_cycle_.InitMessageSystem();
       life_cycle_.WakeUp();
     }
     return;

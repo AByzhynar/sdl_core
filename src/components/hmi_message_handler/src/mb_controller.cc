@@ -62,6 +62,7 @@ CMessageBrokerController::~CMessageBrokerController() {
 }
 
 bool CMessageBrokerController::StartListener() {
+  LOG4CXX_AUTO_TRACE(mb_logger_);
   boost::system::error_code error;
   acceptor_.open(endpoint_.protocol(), error);
   if (error) {
@@ -92,7 +93,9 @@ bool CMessageBrokerController::StartListener() {
 }
 
 bool CMessageBrokerController::Run() {
+  LOG4CXX_AUTO_TRACE(mb_logger_);
   if (acceptor_.is_open() && !shutdown_) {
+    LOG4CXX_TRACE(mb_logger_, "Acceptor is opened");
     acceptor_.async_accept(socket_,
                            std::bind(&CMessageBrokerController::StartSession,
                                      this,
@@ -104,7 +107,9 @@ bool CMessageBrokerController::Run() {
 }
 
 void CMessageBrokerController::WaitForConnection() {
+  LOG4CXX_AUTO_TRACE(mb_logger_);
   if (acceptor_.is_open() && !shutdown_) {
+    LOG4CXX_TRACE(mb_logger_, "Acceptor is opened");
     acceptor_.async_accept(socket_,
                            std::bind(&CMessageBrokerController::StartSession,
                                      this,
@@ -113,6 +118,7 @@ void CMessageBrokerController::WaitForConnection() {
 }
 
 void CMessageBrokerController::StartSession(boost::system::error_code ec) {
+  LOG4CXX_AUTO_TRACE(mb_logger_);
   if (ec) {
     std::string str_err = "ErrorMessage: " + ec.message();
     LOG4CXX_ERROR(mb_logger_, str_err);
@@ -120,6 +126,7 @@ void CMessageBrokerController::StartSession(boost::system::error_code ec) {
     return;
   }
   if (shutdown_) {
+    LOG4CXX_ERROR(mb_logger_, "shutting down...");
     return;
   }
   std::shared_ptr<WebsocketSession> ws_ptr =
@@ -216,16 +223,17 @@ bool CMessageBrokerController::Connect() {
 }
 
 void CMessageBrokerController::suspendReceivingThread() {
+  boost::system::error_code ec;
+
   mConnectionListLock.Acquire();
   std::vector<std::shared_ptr<hmi_message_handler::WebsocketSession> >::iterator
       it;
   for (it = mConnectionList.begin(); it != mConnectionList.end();) {
+    (*it)->Shutdown();
     it = mConnectionList.erase(it);
   }
   mConnectionListLock.Release();
 
-  boost::system::error_code ec;
-  socket_.close();
   acceptor_.cancel(ec);
   if (ec) {
     std::string str_err = "ErrorMessage Cancel: " + ec.message();
@@ -235,13 +243,19 @@ void CMessageBrokerController::suspendReceivingThread() {
   if (ec) {
     std::string str_err = "ErrorMessage Close: " + ec.message();
   }
+
+  boost::system::error_code lErrorCode;
+  socket_.close(lErrorCode);
+  std::cout << lErrorCode.message() << std::endl;
   ioc_.stop();
 }
 
 void CMessageBrokerController::resumeReceivingThread() {
- // ioc_ = std::move(boost::asio::io_context());
   acceptor_ = boost::asio::ip::tcp::acceptor(ioc_);
   socket_ = boost::asio::ip::tcp::socket(ioc_);
+  endpoint_ = {boost::asio::ip::make_address(address_),
+               static_cast<unsigned short>(port_)};
+  shutdown_ = false;
   StartListener();
   Run();
 }
