@@ -205,8 +205,7 @@ void LifeCycleImpl::IgnitionOff() {
 void LifeCycleImpl::WakeUp() {
   LOG4CXX_AUTO_TRACE(logger_);
 #ifdef MESSAGEBROKER_HMIADAPTER
-  mb_adapter_->StartListener();
-  mb_adapter_->Run();
+  mb_adapter_->resumeReceivingThread();
 #endif  // MESSAGEBROKER_HMIADAPTER
   app_manager_->OnWakeUp();
   transport_manager_->Reinit();

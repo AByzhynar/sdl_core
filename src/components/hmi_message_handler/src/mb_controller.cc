@@ -238,6 +238,14 @@ void CMessageBrokerController::suspendReceivingThread() {
   ioc_.stop();
 }
 
+void CMessageBrokerController::resumeReceivingThread() {
+ // ioc_ = std::move(boost::asio::io_context());
+  acceptor_ = boost::asio::ip::tcp::acceptor(ioc_);
+  socket_ = boost::asio::ip::tcp::socket(ioc_);
+  StartListener();
+  Run();
+}
+
 void CMessageBrokerController::exitReceivingThread() {
   shutdown_ = true;
   mConnectionListLock.Acquire();
