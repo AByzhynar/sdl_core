@@ -189,7 +189,7 @@ bool LifeCycleImpl::StartComponents() {
 
 void LifeCycleImpl::LowVoltage() {
   LOG4CXX_AUTO_TRACE(logger_);
-
+  ClearBuffersBeforeWakeUp();
 #ifdef MESSAGEBROKER_HMIADAPTER
   mb_adapter_->OnLowVoltage();
 #endif  // MESSAGEBROKER_HMIADAPTER
@@ -202,14 +202,19 @@ void LifeCycleImpl::IgnitionOff() {
   kill(getpid(), SIGINT);
 }
 
+void LifeCycleImpl::ClearBuffersBeforeWakeUp() {
+  // LOG4CXX_AUTO_TRACE(logger_);
+  mb_adapter_->ClearBuffers();
+}
+
 void LifeCycleImpl::WakeUp() {
   LOG4CXX_AUTO_TRACE(logger_);
-#ifdef MESSAGEBROKER_HMIADAPTER
-  mb_adapter_->OnWakeUp();
-#endif  // MESSAGEBROKER_HMIADAPTER
   app_manager_->OnWakeUp();
   transport_manager_->Reinit();
   transport_manager_->Visibility(true);
+#ifdef MESSAGEBROKER_HMIADAPTER
+  mb_adapter_->OnWakeUp();
+#endif  // MESSAGEBROKER_HMIADAPTER
 }
 
 #ifdef MESSAGEBROKER_HMIADAPTER

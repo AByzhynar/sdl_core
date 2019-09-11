@@ -242,6 +242,17 @@ void CMessageBrokerController::OnWakeUp() {
   mConnectionListLock.Release();
 }
 
+void CMessageBrokerController::ClearBuffers() {
+  LOG4CXX_AUTO_TRACE(mb_logger_);
+  mConnectionListLock.Acquire();
+  std::vector<std::shared_ptr<hmi_message_handler::WebsocketSession> >::iterator
+      it;
+  for (it = mConnectionList.begin(); it != mConnectionList.end(); ++it) {
+    (*it)->ClearBuffers();
+  }
+  mConnectionListLock.Release();
+}
+
 void CMessageBrokerController::exitReceivingThread() {
   shutdown_ = true;
   mConnectionListLock.Acquire();
@@ -364,8 +375,8 @@ bool CMessageBrokerController::addSubscriber(WebsocketSession* ws_session,
   bool result = true;
   sync_primitives::AutoLock lock(mSubscribersListLock);
   std::pair<std::multimap<std::string, WebsocketSession*>::iterator,
-            std::multimap<std::string, WebsocketSession*>::iterator> p =
-      mSubscribersList.equal_range(name);
+            std::multimap<std::string, WebsocketSession*>::iterator>
+      p = mSubscribersList.equal_range(name);
   if (p.first != p.second) {
     std::multimap<std::string, WebsocketSession*>::iterator itr;
     for (itr = p.first; itr != p.second; itr++) {
@@ -386,8 +397,8 @@ void CMessageBrokerController::deleteSubscriber(WebsocketSession* ws,
                                                 std::string name) {
   sync_primitives::AutoLock lock(mSubscribersListLock);
   std::pair<std::multimap<std::string, WebsocketSession*>::iterator,
-            std::multimap<std::string, WebsocketSession*>::iterator> p =
-      mSubscribersList.equal_range(name);
+            std::multimap<std::string, WebsocketSession*>::iterator>
+      p = mSubscribersList.equal_range(name);
   if (p.first != p.second) {
     std::multimap<std::string, WebsocketSession*>::iterator itr;
     for (itr = p.first; itr != p.second;) {
@@ -407,8 +418,8 @@ int CMessageBrokerController::getSubscribersFd(
 
   sync_primitives::AutoLock lock(mSubscribersListLock);
   std::pair<std::multimap<std::string, WebsocketSession*>::iterator,
-            std::multimap<std::string, WebsocketSession*>::iterator> p =
-      mSubscribersList.equal_range(name);
+            std::multimap<std::string, WebsocketSession*>::iterator>
+      p = mSubscribersList.equal_range(name);
   if (p.first != p.second) {
     std::multimap<std::string, WebsocketSession*>::iterator itr;
     for (itr = p.first; itr != p.second; itr++) {

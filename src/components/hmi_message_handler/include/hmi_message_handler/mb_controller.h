@@ -119,6 +119,8 @@ class CMessageBrokerController
 
   void OnWakeUp();
 
+  void ClearBuffers();
+
   virtual void processResponse(std::string method, Json::Value& root) = 0;
 
   virtual void processRequest(Json::Value& root) = 0;

@@ -80,6 +80,7 @@ class LifeCycleImpl : public LifeCycle {
   void StopComponents() OVERRIDE;
   void LowVoltage() OVERRIDE;
   void WakeUp() OVERRIDE;
+  void ClearBuffersBeforeWakeUp() OVERRIDE;
   void IgnitionOff() OVERRIDE;
 
  private:

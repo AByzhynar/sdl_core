@@ -81,6 +81,8 @@ class LifeCycle {
    */
   virtual void WakeUp() = 0;
 
+  virtual void ClearBuffersBeforeWakeUp() = 0;
+
   /**
    * Makes appropriate actions when Ignition Off signal received:
    * Triggers all SDL components stop and deletion
