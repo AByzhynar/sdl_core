@@ -132,6 +132,10 @@ class TransportManagerImpl
    */
   virtual int Reinit() OVERRIDE;
 
+  void StopEventsProcessing() OVERRIDE;
+
+  void StartEventsProcessing() OVERRIDE;
+
   /**
    * @brief Start scanning for new devices.
    *
@@ -413,6 +417,10 @@ class TransportManagerImpl
   timer::Timer device_switch_timer_;
   sync_primitives::Lock device_lock_;
   DeviceUID device_to_reconnect_;
+
+  std::atomic_bool events_processing_is_active_;
+  sync_primitives::Lock events_processing_lock_;
+  sync_primitives::ConditionalVariable events_processing_cond_var_;
 
   /**
    * @brief Adds new incoming connection to connections list

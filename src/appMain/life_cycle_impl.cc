@@ -190,6 +190,7 @@ bool LifeCycleImpl::StartComponents() {
 void LifeCycleImpl::LowVoltage() {
   LOG4CXX_AUTO_TRACE(logger_);
   transport_manager_->Visibility(false);
+  transport_manager_->StopEventsProcessing();
   app_manager_->OnLowVoltage();
 }
 
@@ -203,6 +204,7 @@ void LifeCycleImpl::WakeUp() {
   app_manager_->OnWakeUp();
   transport_manager_->Reinit();
   transport_manager_->Visibility(true);
+  transport_manager_->StartEventsProcessing();
 }
 
 #ifdef MESSAGEBROKER_HMIADAPTER

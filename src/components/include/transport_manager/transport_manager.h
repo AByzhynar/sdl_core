@@ -68,6 +68,10 @@ class TransportManager {
    */
   virtual int Reinit() = 0;
 
+  virtual void StopEventsProcessing() = 0;
+
+  virtual void StartEventsProcessing() = 0;
+
   /**
    * @brief Start scanning for new devices.
    *

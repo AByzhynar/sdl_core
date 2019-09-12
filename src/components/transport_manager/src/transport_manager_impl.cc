@@ -100,7 +100,10 @@ TransportManagerImpl::TransportManagerImpl(
     , device_switch_timer_(
           "Device reconection timer",
           new timer::TimerTaskImpl<TransportManagerImpl>(
-              this, &TransportManagerImpl::ReconnectionTimeout)) {
+              this, &TransportManagerImpl::ReconnectionTimeout))
+    , events_processing_is_active_(true)
+    , events_processing_lock_()
+    , events_processing_cond_var_() {
   LOG4CXX_TRACE(logger_, "TransportManager has created");
 }
 
@@ -596,6 +599,17 @@ int TransportManagerImpl::Reinit() {
   return ret;
 }
 
+void TransportManagerImpl::StopEventsProcessing() {
+  LOG4CXX_AUTO_TRACE(logger_);
+  events_processing_is_active_ = false;
+}
+
+void TransportManagerImpl::StartEventsProcessing() {
+  LOG4CXX_AUTO_TRACE(logger_);
+  events_processing_is_active_ = true;
+  events_processing_cond_var_.Broadcast();
+}
+
 int TransportManagerImpl::Visibility(const bool& on_off) const {
   LOG4CXX_TRACE(logger_, "enter. On_off: " << &on_off);
   TransportAdapter::Error ret;
@@ -987,6 +1001,13 @@ void TransportManagerImpl::OnDeviceListUpdated(TransportAdapter* ta) {
 
 void TransportManagerImpl::Handle(TransportAdapterEvent event) {
   LOG4CXX_TRACE(logger_, "enter");
+
+  if (!events_processing_is_active_) {
+    LOG4CXX_DEBUG(logger_, "Waiting for events handling unlock");
+    sync_primitives::AutoLock auto_lock(events_processing_lock_);
+    events_processing_cond_var_.Wait(auto_lock);
+  }
+
   switch (event.event_type) {
     case EventTypeEnum::ON_SEARCH_DONE: {
       RaiseEvent(&TransportManagerListener::OnScanDevicesFinished);
@@ -1297,6 +1318,13 @@ void TransportManagerImpl::SetTelemetryObserver(TMTelemetryObserver* observer) {
 
 void TransportManagerImpl::Handle(::protocol_handler::RawMessagePtr msg) {
   LOG4CXX_TRACE(logger_, "enter");
+
+  if (!events_processing_is_active_) {
+    LOG4CXX_DEBUG(logger_, "Waiting for events handling unlock");
+    sync_primitives::AutoLock auto_lock(events_processing_lock_);
+    events_processing_cond_var_.Wait(auto_lock);
+  }
+
   sync_primitives::AutoReadLock lock(connections_lock_);
   ConnectionInternal* connection = GetConnection(msg->connection_key());
   if (connection == NULL) {

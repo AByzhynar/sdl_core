@@ -58,6 +58,8 @@ class MockTransportManager : public ::transport_manager::TransportManager,
  public:
   MOCK_METHOD1(Init, int(resumption::LastState& last_state));
   MOCK_METHOD0(Reinit, int());
+  MOCK_METHOD0(StopEventsProcessing, void());
+  MOCK_METHOD0(StartEventsProcessing, void());
   MOCK_METHOD0(SearchDevices, int());
   MOCK_METHOD1(
       AddCloudDevice,
