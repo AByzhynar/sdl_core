@@ -201,10 +201,12 @@ void LifeCycleImpl::IgnitionOff() {
 
 void LifeCycleImpl::WakeUp() {
   LOG4CXX_AUTO_TRACE(logger_);
-  app_manager_->OnWakeUp();
   transport_manager_->Reinit();
   transport_manager_->Visibility(true);
   transport_manager_->StartEventsProcessing();
+  app_manager_->OnWakeUp();
+
+
 }
 
 #ifdef MESSAGEBROKER_HMIADAPTER
