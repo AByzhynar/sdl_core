@@ -75,6 +75,10 @@ class ClientConnectionListener {
    */
   virtual TransportAdapter::Error StopListening() = 0;
 
+  virtual TransportAdapter::Error SuspendListening() = 0;
+
+  virtual TransportAdapter::Error ResumeListening() = 0;
+
   /**
    * @brief Destructor.
    */

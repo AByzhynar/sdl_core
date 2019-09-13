@@ -68,6 +68,8 @@ class TransportManager {
    */
   virtual int Reinit() = 0;
 
+  virtual void Deinit() = 0;
+
   virtual void StopEventsProcessing() = 0;
 
   virtual void StartEventsProcessing() = 0;
@@ -204,6 +206,8 @@ class TransportManager {
    * @return Code error.
    */
   virtual int Visibility(const bool& on_off) const = 0;
+
+  virtual int EnableClientsListening(const bool& on_off) const = 0;
 };
 }  // namespace transport_manager
 #endif  // SRC_COMPONENTS_INCLUDE_TRANSPORT_MANAGER_TRANSPORT_MANAGER_H_

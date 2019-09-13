@@ -132,6 +132,8 @@ class TransportManagerImpl
    */
   virtual int Reinit() OVERRIDE;
 
+  virtual void Deinit() OVERRIDE;
+
   void StopEventsProcessing() OVERRIDE;
 
   void StartEventsProcessing() OVERRIDE;
@@ -262,6 +264,8 @@ class TransportManagerImpl
    * @return Code error.
    */
   int Visibility(const bool& on_off) const OVERRIDE;
+
+  int EnableClientsListening(const bool& on_off) const OVERRIDE;
 
   /**
    * @brief OnDeviceListUpdated updates device list and sends appropriate

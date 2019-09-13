@@ -105,7 +105,7 @@ PlatformSpecificNetworkInterfaceListener::
 
 bool PlatformSpecificNetworkInterfaceListener::Init() {
   LOG4CXX_AUTO_TRACE(logger_);
-
+  LOG4CXX_DEBUG(logger_, "Socket = " << socket_);
   if (socket_ >= 0) {
     LOG4CXX_WARN(logger_, "Network interface listener is already initialized");
     return false;
@@ -146,12 +146,14 @@ bool PlatformSpecificNetworkInterfaceListener::Init() {
     LOG4CXX_WARN(logger_, "Failed to configure pipe to non-blocking");
   }
 
+  LOG4CXX_DEBUG(logger_, "Socket = " << socket_);
   return true;
 }
 
 void PlatformSpecificNetworkInterfaceListener::Deinit() {
   LOG4CXX_AUTO_TRACE(logger_);
 
+  LOG4CXX_DEBUG(logger_, "Socket = " << socket_);
   if (socket_ >= 0) {
     close(socket_);
     socket_ = -1;
@@ -164,6 +166,7 @@ void PlatformSpecificNetworkInterfaceListener::Deinit() {
     close(pipe_fds_[0]);
     pipe_fds_[0] = -1;
   }
+  LOG4CXX_DEBUG(logger_, "Socket = " << socket_);
 }
 
 bool PlatformSpecificNetworkInterfaceListener::Start() {

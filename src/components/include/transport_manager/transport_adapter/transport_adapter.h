@@ -249,6 +249,10 @@ class TransportAdapter {
    */
   virtual Error StopClientListening() = 0;
 
+  virtual Error SuspendClientListening() = 0;
+
+  virtual Error ResumeClientListening() = 0;
+
   /**
    * @brief Remove marked as FINALISING connection from accounting.
    *

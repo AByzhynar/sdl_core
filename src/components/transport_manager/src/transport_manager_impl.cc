@@ -589,12 +589,15 @@ int TransportManagerImpl::Init(resumption::LastState& last_state) {
   return E_SUCCESS;
 }
 
-int TransportManagerImpl::Reinit() {
+void TransportManagerImpl::Deinit() {
   LOG4CXX_AUTO_TRACE(logger_);
   DisconnectAllDevices();
   TerminateAllAdapters();
   device_to_adapter_map_.clear();
   connection_id_counter_ = 0;
+}
+
+int TransportManagerImpl::Reinit() {
   int ret = InitAllAdapters();
   return ret;
 }
@@ -635,6 +638,38 @@ int TransportManagerImpl::Visibility(const bool& on_off) const {
     if (TransportAdapter::Error::NOT_SUPPORTED == ret) {
       LOG4CXX_DEBUG(logger_,
                     "Visibility change is not supported for adapter "
+                        << *it << "[" << (*it)->GetDeviceType() << "]");
+    }
+  }
+  LOG4CXX_TRACE(logger_, "exit with E_SUCCESS");
+  return E_SUCCESS;
+}
+
+int TransportManagerImpl::EnableClientsListening(const bool& on_off) const {
+  LOG4CXX_TRACE(logger_, "enter. On_off: " << &on_off);
+  TransportAdapter::Error ret;
+
+  LOG4CXX_DEBUG(logger_, "Client listening change requested to " << on_off);
+  if (!is_initialized_) {
+    LOG4CXX_ERROR(logger_, "TM is not initialized");
+    LOG4CXX_TRACE(logger_,
+                  "exit with E_TM_IS_NOT_INITIALIZED. Condition: false == "
+                  "is_initialized_");
+    return E_TM_IS_NOT_INITIALIZED;
+  }
+
+  for (std::vector<TransportAdapter*>::const_iterator it =
+           transport_adapters_.begin();
+       it != transport_adapters_.end();
+       ++it) {
+    if (on_off) {
+      ret = (*it)->ResumeClientListening();
+    } else {
+      ret = (*it)->SuspendClientListening();
+    }
+    if (TransportAdapter::Error::NOT_SUPPORTED == ret) {
+      LOG4CXX_DEBUG(logger_,
+                    "Client Listening change is not supported for adapter "
                         << *it << "[" << (*it)->GetDeviceType() << "]");
     }
   }
