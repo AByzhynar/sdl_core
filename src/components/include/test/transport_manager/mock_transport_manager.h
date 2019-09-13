@@ -58,6 +58,7 @@ class MockTransportManager : public ::transport_manager::TransportManager,
  public:
   MOCK_METHOD1(Init, int(resumption::LastState& last_state));
   MOCK_METHOD0(Reinit, int());
+  MOCK_METHOD0(Deinit, void());
   MOCK_METHOD0(StopEventsProcessing, void());
   MOCK_METHOD0(StartEventsProcessing, void());
   MOCK_METHOD0(SearchDevices, int());
@@ -81,6 +82,7 @@ class MockTransportManager : public ::transport_manager::TransportManager,
   MOCK_METHOD0(Stop, int());
   MOCK_METHOD1(RemoveDevice, int(const DeviceHandle));
   MOCK_CONST_METHOD1(Visibility, int(const bool&));
+  MOCK_CONST_METHOD1(EnableClientsListening, int(const bool&));
   MOCK_METHOD1(SetTelemetryObserver,
                void(transport_manager::TMTelemetryObserver* observer));
 };
