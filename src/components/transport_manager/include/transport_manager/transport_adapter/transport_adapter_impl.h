@@ -209,6 +209,10 @@ class TransportAdapterImpl : public TransportAdapter,
    */
   TransportAdapter::Error StartClientListening() OVERRIDE;
 
+  TransportAdapter::Error SuspendClientListening() OVERRIDE;
+
+  TransportAdapter::Error ResumeClientListening() OVERRIDE;
+
   /**
    * @brief Stop client listener.
    *

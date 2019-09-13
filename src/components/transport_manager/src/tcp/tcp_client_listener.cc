@@ -402,6 +402,40 @@ TransportAdapter::Error TcpClientListener::StopListening() {
   return TransportAdapter::OK;
 }
 
+TransportAdapter::Error TcpClientListener::SuspendListening() {
+  LOG4CXX_AUTO_TRACE(logger_);
+  if (!started_) {
+    LOG4CXX_DEBUG(logger_, "TcpClientListener is not running now");
+    return TransportAdapter::BAD_STATE;
+  }
+
+  if (shutdown(socket_, SHUT_RDWR) != 0) {
+    LOG4CXX_WARN(logger_, "Socket was unable to be shutdowned");
+  }
+
+  if (close(socket_) != 0) {
+    LOG4CXX_ERROR_WITH_ERRNO(logger_, "Failed to close socket");
+  }
+
+  interface_listener_->Deinit();
+  StopListeningThread();
+  started_ = false;
+
+  LOG4CXX_INFO(logger_, "Tcp client listener has stopped successfully");
+  return TransportAdapter::OK;
+}
+
+TransportAdapter::Error TcpClientListener::ResumeListening() {
+  LOG4CXX_AUTO_TRACE(logger_);
+
+  interface_listener_->Init();
+  StartListeningThread();
+  started_ = true;
+
+  LOG4CXX_INFO(logger_, "Tcp client listener has started successfully");
+  return TransportAdapter::OK;
+}
+
 TransportAdapter::Error TcpClientListener::StartListeningThread() {
   LOG4CXX_AUTO_TRACE(logger_);
 

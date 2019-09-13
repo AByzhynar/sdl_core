@@ -250,6 +250,18 @@ class TransportAdapter {
   virtual Error StopClientListening() = 0;
 
   /**
+   * @brief Suspends client listening thread of current adapter
+   * @return Error information about possible reason of failure.
+   */
+  virtual Error SuspendClientListening() = 0;
+
+  /**
+   * @brief Resumes client listening thread of current adapter
+   * @return Error information about possible reason of failure.
+   */
+  virtual Error ResumeClientListening() = 0;
+
+  /**
    * @brief Remove marked as FINALISING connection from accounting.
    *
    * @param device_handle Device unique identifier.

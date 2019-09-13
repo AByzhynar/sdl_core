@@ -69,6 +69,21 @@ class TransportManager {
   virtual int Reinit() = 0;
 
   /**
+   * @brief Deinitializes all transport adapters and device instances
+   */
+  virtual void Deinit() = 0;
+
+  /**
+   * @brief Stops transport events processing handler threads
+   */
+  virtual void StopEventsProcessing() = 0;
+
+  /**
+   * @brief Resumes transport events processing handler threads
+   */
+  virtual void StartEventsProcessing() = 0;
+
+  /**
    * @brief Start scanning for new devices.
    *
    * @return Code error.
@@ -200,6 +215,14 @@ class TransportManager {
    * @return Code error.
    */
   virtual int Visibility(const bool& on_off) const = 0;
+
+  /**
+   * @brief Turns on or off connected clients listening threads
+   * @param on_off when true, TM enables client listening threads, otherwise
+   * TM disables client listening threads
+   * @return error code
+   */
+  virtual int EnableClientsListening(const bool& on_off) const = 0;
 };
 }  // namespace transport_manager
 #endif  // SRC_COMPONENTS_INCLUDE_TRANSPORT_MANAGER_TRANSPORT_MANAGER_H_
