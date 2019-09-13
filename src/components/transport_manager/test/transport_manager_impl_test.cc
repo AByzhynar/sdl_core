@@ -691,12 +691,14 @@ TEST_F(TransportManagerImplTest, StopTransportManager) {
 TEST_F(TransportManagerImplTest, Reinit) {
   EXPECT_CALL(*mock_adapter_, Terminate());
   EXPECT_CALL(*mock_adapter_, Init()).WillOnce(Return(TransportAdapter::OK));
+  tm_.Deinit();
   EXPECT_EQ(E_SUCCESS, tm_.Reinit());
 }
 
 TEST_F(TransportManagerImplTest, Reinit_InitAdapterFailed) {
   EXPECT_CALL(*mock_adapter_, Terminate());
   EXPECT_CALL(*mock_adapter_, Init()).WillOnce(Return(TransportAdapter::FAIL));
+  tm_.Deinit();
   EXPECT_EQ(E_ADAPTERS_FAIL, tm_.Reinit());
 }
 
