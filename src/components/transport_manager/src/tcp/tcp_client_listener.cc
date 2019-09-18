@@ -374,17 +374,16 @@ TransportAdapter::Error TcpClientListener::StartListening() {
   return TransportAdapter::OK;
 }
 
-void TcpClientListener::ListeningThreadDelegate::exitThreadMain() {
-  parent_->StopLoop();
-}
+TransportAdapter::Error TcpClientListener::ResumeListening() {
+  LOG4CXX_AUTO_TRACE(logger_);
 
-void TcpClientListener::ListeningThreadDelegate::threadMain() {
-  parent_->Loop();
-}
+  interface_listener_->Init();
+  StartListeningThread();
+  started_ = true;
 
-TcpClientListener::ListeningThreadDelegate::ListeningThreadDelegate(
-    TcpClientListener* parent)
-    : parent_(parent) {}
+  LOG4CXX_INFO(logger_, "Tcp client listener was resumed successfully");
+  return TransportAdapter::OK;
+}
 
 TransportAdapter::Error TcpClientListener::StopListening() {
   LOG4CXX_AUTO_TRACE(logger_);
@@ -398,7 +397,7 @@ TransportAdapter::Error TcpClientListener::StopListening() {
   StopListeningThread();
 
   started_ = false;
-  LOG4CXX_INFO(logger_, "Tcp client listener has stopped successfully");
+  LOG4CXX_INFO(logger_, "Tcp client listener was stopped successfully");
   return TransportAdapter::OK;
 }
 
@@ -421,20 +420,21 @@ TransportAdapter::Error TcpClientListener::SuspendListening() {
   StopListeningThread();
   started_ = false;
 
-  LOG4CXX_INFO(logger_, "Tcp client listener has stopped successfully");
+  LOG4CXX_INFO(logger_, "Tcp client listener was suspended");
   return TransportAdapter::OK;
 }
 
-TransportAdapter::Error TcpClientListener::ResumeListening() {
-  LOG4CXX_AUTO_TRACE(logger_);
-
-  interface_listener_->Init();
-  StartListeningThread();
-  started_ = true;
-
-  LOG4CXX_INFO(logger_, "Tcp client listener has started successfully");
-  return TransportAdapter::OK;
+void TcpClientListener::ListeningThreadDelegate::exitThreadMain() {
+  parent_->StopLoop();
 }
+
+void TcpClientListener::ListeningThreadDelegate::threadMain() {
+  parent_->Loop();
+}
+
+TcpClientListener::ListeningThreadDelegate::ListeningThreadDelegate(
+    TcpClientListener* parent)
+    : parent_(parent) {}
 
 TransportAdapter::Error TcpClientListener::StartListeningThread() {
   LOG4CXX_AUTO_TRACE(logger_);
