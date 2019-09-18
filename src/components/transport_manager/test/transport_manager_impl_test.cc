@@ -666,13 +666,17 @@ TEST_F(TransportManagerImplTest, RemoveDevice_DeviceWasAdded) {
 TEST_F(TransportManagerImplTest, SetVisibilityOn_StartClientListening) {
   EXPECT_CALL(*mock_adapter_, StartClientListening())
       .WillOnce(Return(TransportAdapter::OK));
-  EXPECT_EQ(::transport_manager::E_SUCCESS, tm_.Visibility(true));
+  EXPECT_EQ(::transport_manager::E_SUCCESS,
+            tm_.PerformActionOnClients(
+                transport_manager::ClientAction::kVisibilityOn));
 }
 
 TEST_F(TransportManagerImplTest, SetVisibilityOff_StopClientListening) {
   EXPECT_CALL(*mock_adapter_, StopClientListening())
       .WillOnce(Return(TransportAdapter::OK));
-  EXPECT_EQ(::transport_manager::E_SUCCESS, tm_.Visibility(false));
+  EXPECT_EQ(::transport_manager::E_SUCCESS,
+            tm_.PerformActionOnClients(
+                transport_manager::ClientAction::kVisibilityOff));
 }
 
 TEST_F(TransportManagerImplTest, StopTransportManager) {
@@ -942,12 +946,13 @@ TEST_F(TransportManagerImplTest, RemoveDevice_TMIsNotInitialized) {
 
 TEST_F(TransportManagerImplTest, Visibility_TMIsNotInitialized) {
   // Arrange
-  const bool visible = true;
+  const transport_manager::ClientAction action =
+      transport_manager::ClientAction::kVisibilityOn;
   // Check before Act
   UninitializeTM();
   // Act and Assert
   EXPECT_CALL(*mock_adapter_, StartClientListening()).Times(0);
-  EXPECT_EQ(E_TM_IS_NOT_INITIALIZED, tm_.Visibility(visible));
+  EXPECT_EQ(E_TM_IS_NOT_INITIALIZED, tm_.PerformActionOnClients(action));
 }
 
 TEST_F(TransportManagerImplTest, HandleMessage_ConnectionNotExist) {
@@ -975,14 +980,18 @@ TEST_F(TransportManagerImplTest, SearchDevices_TMIsNotInitialized) {
 TEST_F(TransportManagerImplTest, SetVisibilityOn_TransportAdapterNotSupported) {
   EXPECT_CALL(*mock_adapter_, StartClientListening())
       .WillOnce(Return(TransportAdapter::NOT_SUPPORTED));
-  EXPECT_EQ(E_SUCCESS, tm_.Visibility(true));
+  EXPECT_EQ(E_SUCCESS,
+            tm_.PerformActionOnClients(
+                transport_manager::ClientAction::kVisibilityOn));
 }
 
 TEST_F(TransportManagerImplTest,
        SetVisibilityOff_TransportAdapterNotSupported) {
   EXPECT_CALL(*mock_adapter_, StopClientListening())
       .WillOnce(Return(TransportAdapter::NOT_SUPPORTED));
-  EXPECT_EQ(E_SUCCESS, tm_.Visibility(false));
+  EXPECT_EQ(E_SUCCESS,
+            tm_.PerformActionOnClients(
+                transport_manager::ClientAction::kVisibilityOff));
 }
 
 TEST_F(TransportManagerImplTest,
