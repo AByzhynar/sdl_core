@@ -433,6 +433,23 @@ TransportAdapter::Error TransportAdapterImpl::StartClientListening() {
   return err;
 }
 
+TransportAdapter::Error TransportAdapterImpl::ResumeClientListening() {
+  LOG4CXX_TRACE(logger_, "enter");
+  if (client_connection_listener_ == 0) {
+    LOG4CXX_TRACE(logger_, "exit with NOT_SUPPORTED");
+    return NOT_SUPPORTED;
+  }
+
+  if (!client_connection_listener_->IsInitialised()) {
+    LOG4CXX_TRACE(logger_, "exit with BAD_STATE");
+    return BAD_STATE;
+  }
+
+  TransportAdapter::Error err = client_connection_listener_->ResumeListening();
+  LOG4CXX_TRACE(logger_, "exit with error: " << err);
+  return err;
+}
+
 TransportAdapter::Error TransportAdapterImpl::StopClientListening() {
   LOG4CXX_TRACE(logger_, "enter");
   if (client_connection_listener_ == 0) {
@@ -448,23 +465,6 @@ TransportAdapter::Error TransportAdapterImpl::StopClientListening() {
   for (DeviceMap::iterator it = devices_.begin(); it != devices_.end(); ++it) {
     it->second->Stop();
   }
-  LOG4CXX_TRACE(logger_, "exit with error: " << err);
-  return err;
-}
-
-TransportAdapter::Error TransportAdapterImpl::ResumeClientListening() {
-  LOG4CXX_TRACE(logger_, "enter");
-  if (client_connection_listener_ == 0) {
-    LOG4CXX_TRACE(logger_, "exit with NOT_SUPPORTED");
-    return NOT_SUPPORTED;
-  }
-
-  if (!client_connection_listener_->IsInitialised()) {
-    LOG4CXX_TRACE(logger_, "exit with BAD_STATE");
-    return BAD_STATE;
-  }
-
-  TransportAdapter::Error err = client_connection_listener_->ResumeListening();
   LOG4CXX_TRACE(logger_, "exit with error: " << err);
   return err;
 }

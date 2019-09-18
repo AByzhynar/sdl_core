@@ -67,6 +67,32 @@ struct ConnectionFinder {
     return id_ == connection.id;
   }
 };
+
+typedef TransportAdapter::Error (TransportAdapter::*TAFunction)();
+
+TAFunction GetFunction(const transport_manager::ClientAction required_action) {
+  TransportAdapter::Error (TransportAdapter::*ptr)();
+
+  switch (required_action) {
+    case transport_manager::ClientAction::kListeningOn:
+      ptr = &TransportAdapter::ResumeClientListening;
+      break;
+    case transport_manager::ClientAction::kListeningOff:
+      ptr = &TransportAdapter::SuspendClientListening;
+      break;
+    case transport_manager::ClientAction::kVisibilityOn:
+      ptr = &TransportAdapter::StartClientListening;
+      break;
+    case transport_manager::ClientAction::kVisibilityOff:
+      ptr = &TransportAdapter::StopClientListening;
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  return ptr;
+}
+
 }  // namespace
 
 namespace transport_manager {
@@ -613,11 +639,12 @@ void TransportManagerImpl::StartEventsProcessing() {
   events_processing_cond_var_.Broadcast();
 }
 
-int TransportManagerImpl::Visibility(const bool& on_off) const {
-  LOG4CXX_TRACE(logger_, "enter. On_off: " << &on_off);
-  TransportAdapter::Error ret;
-
-  LOG4CXX_DEBUG(logger_, "Visibility change requested to " << on_off);
+int TransportManagerImpl::PerformActionOnClients(
+    const ClientAction required_action) const {
+  LOG4CXX_TRACE(logger_,
+                "The following action requested: "
+                    << static_cast<int>(required_action)
+                    << " to be performed on connected clients");
   if (!is_initialized_) {
     LOG4CXX_ERROR(logger_, "TM is not initialized");
     LOG4CXX_TRACE(logger_,
@@ -626,48 +653,21 @@ int TransportManagerImpl::Visibility(const bool& on_off) const {
     return E_TM_IS_NOT_INITIALIZED;
   }
 
+  TransportAdapter::Error (TransportAdapter::*ptr)() =
+      GetFunction(required_action);
+
+  TransportAdapter::Error ret = TransportAdapter::Error::INVALID;
   for (std::vector<TransportAdapter*>::const_iterator it =
            transport_adapters_.begin();
        it != transport_adapters_.end();
        ++it) {
-    if (on_off) {
-      ret = (*it)->StartClientListening();
-    } else {
-      ret = (*it)->StopClientListening();
-    }
+    TransportAdapter* pointer = *it;
+    TransportAdapter& ref = *pointer;
+    ret = (ref.*ptr)();
+
     if (TransportAdapter::Error::NOT_SUPPORTED == ret) {
       LOG4CXX_DEBUG(logger_,
-                    "Visibility change is not supported for adapter "
-                        << *it << "[" << (*it)->GetDeviceType() << "]");
-    }
-  }
-  LOG4CXX_TRACE(logger_, "exit with E_SUCCESS");
-  return E_SUCCESS;
-}
-
-int TransportManagerImpl::EnableClientsListening(const bool& on_off) const {
-  LOG4CXX_TRACE(logger_, "Client listening change requested to " << on_off);
-  if (!is_initialized_) {
-    LOG4CXX_ERROR(logger_, "TM is not initialized");
-    LOG4CXX_TRACE(logger_,
-                  "exit with E_TM_IS_NOT_INITIALIZED. Condition: false == "
-                  "is_initialized_");
-    return E_TM_IS_NOT_INITIALIZED;
-  }
-
-  TransportAdapter::Error ret;
-  for (std::vector<TransportAdapter*>::const_iterator it =
-           transport_adapters_.begin();
-       it != transport_adapters_.end();
-       ++it) {
-    if (on_off) {
-      ret = (*it)->ResumeClientListening();
-    } else {
-      ret = (*it)->SuspendClientListening();
-    }
-    if (TransportAdapter::Error::NOT_SUPPORTED == ret) {
-      LOG4CXX_DEBUG(logger_,
-                    "Client Listening change is not supported for adapter "
+                    "Requested action on client is not supported for adapter "
                         << *it << "[" << (*it)->GetDeviceType() << "]");
     }
   }

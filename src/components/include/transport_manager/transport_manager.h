@@ -44,6 +44,13 @@ class LastState;
 
 namespace transport_manager {
 
+enum class ClientAction {
+  kVisibilityOn,
+  kVisibilityOff,
+  kListeningOn,
+  kListeningOff
+};
+
 class TransportAdapterEvent;
 
 /**
@@ -208,21 +215,13 @@ class TransportManager {
   virtual int RemoveDevice(const DeviceHandle device_handle) = 0;
 
   /**
-   * @brief Turns on or off visibility of SDL to mobile devices
-   * when visibility is ON (on_off = true) mobile devices are able to connect
-   * otherwise ((on_off = false)) SDL is not visible from outside
-   *
-   * @return Code error.
-   */
-  virtual int Visibility(const bool& on_off) const = 0;
-
-  /**
-   * @brief Turns on or off connected clients listening threads
-   * @param on_off when true, TM enables client listening threads, otherwise
-   * TM disables client listening threads
+   * @brief Performs specified action on connected clients
+   * @param required_action is the action which should be performed for the
+   * connected clients
    * @return error code
    */
-  virtual int EnableClientsListening(const bool& on_off) const = 0;
+  virtual int PerformActionOnClients(
+      const ClientAction required_action) const = 0;
 };
 }  // namespace transport_manager
 #endif  // SRC_COMPONENTS_INCLUDE_TRANSPORT_MANAGER_TRANSPORT_MANAGER_H_

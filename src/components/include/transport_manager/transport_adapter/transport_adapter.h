@@ -111,7 +111,15 @@ class TransportAdapter {
   /**
    * @enum Available types of errors.
    */
-  enum Error { OK, FAIL, NOT_SUPPORTED, ALREADY_EXISTS, BAD_STATE, BAD_PARAM };
+  enum Error {
+    INVALID = -1,
+    OK,
+    FAIL,
+    NOT_SUPPORTED,
+    ALREADY_EXISTS,
+    BAD_STATE,
+    BAD_PARAM
+  };
 
  public:
   /**

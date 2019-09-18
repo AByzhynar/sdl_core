@@ -256,16 +256,7 @@ class TransportManagerImpl
    **/
   int RemoveDevice(const DeviceHandle device) OVERRIDE;
 
-  /**
-   * @brief Turns on or off visibility of SDL to mobile devices
-   * when visibility is ON (on_off = true) mobile devices are able to connect
-   * otherwise ((on_off = false)) SDL is not visible from outside
-   *
-   * @return Code error.
-   */
-  int Visibility(const bool& on_off) const OVERRIDE;
-
-  int EnableClientsListening(const bool& on_off) const OVERRIDE;
+  int PerformActionOnClients(const ClientAction required_action) const OVERRIDE;
 
   /**
    * @brief OnDeviceListUpdated updates device list and sends appropriate
@@ -290,7 +281,7 @@ class TransportManagerImpl
 
   const TransportManagerSettings& get_settings() const;
 
- protected:
+protected:
   template <class Proc, class... Args>
   void RaiseEvent(Proc proc, Args... args) {
     for (TransportManagerListenerList::iterator it =
