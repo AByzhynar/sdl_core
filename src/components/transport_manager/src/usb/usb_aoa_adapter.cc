@@ -69,21 +69,32 @@ bool UsbAoaAdapter::IsInitialised() const {
 
 TransportAdapter::Error UsbAoaAdapter::Init() {
   LOG4CXX_TRACE(logger_, "enter");
-  TransportAdapter::Error error = usb_handler_->Init();
-  if (error != TransportAdapter::OK) {
+  TransportAdapter::Error init_error = usb_handler_->Init();
+  if (init_error != TransportAdapter::OK) {
     LOG4CXX_TRACE(logger_,
                   "exit with error "
-                      << error << ". Condition: error != TransportAdapter::OK");
-    return error;
+                      << init_error
+                      << ". Condition: error != TransportAdapter::OK");
+    return init_error;
   }
-  error = TransportAdapterImpl::Init();
-  if (error != TransportAdapter::OK) {
+  init_error = TransportAdapterImpl::Init();
+  if (init_error != TransportAdapter::OK) {
     LOG4CXX_TRACE(logger_,
                   "exit with error "
-                      << error << ". Condition: error != TransportAdapter::OK");
-    return error;
+                      << init_error
+                      << ". Condition: error != TransportAdapter::OK");
+    return init_error;
   }
   is_initialised_ = true;
+
+  TransportAdapter::Error run_error = usb_handler_->Run();
+  if (run_error != TransportAdapter::OK) {
+    LOG4CXX_TRACE(logger_,
+                  "exit with error "
+                      << run_error
+                      << ". Condition: run error != TransportAdapter::OK");
+    return run_error;
+  }
   LOG4CXX_TRACE(logger_, "exit with TransportAdapter::OK");
   return TransportAdapter::OK;
 }

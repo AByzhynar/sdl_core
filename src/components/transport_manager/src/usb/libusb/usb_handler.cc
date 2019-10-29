@@ -90,7 +90,7 @@ UsbHandler::UsbHandler()
 
 UsbHandler::~UsbHandler() {
   shutdown_requested_ = true;
-  thread_->stop();
+//  thread_->stop();
   LOG4CXX_INFO(logger_, "UsbHandler thread finished");
   if (libusb_context_ != 0) {  // This wakes up libusb_handle_events()
     libusb_hotplug_deregister_callback(libusb_context_,
@@ -319,7 +319,11 @@ TransportAdapter::Error UsbHandler::Init() {
                   "!= libusb_ret");
     return TransportAdapter::FAIL;
   }
+  return TransportAdapter::OK;
+}
 
+TransportAdapter::Error UsbHandler::Run() {
+  LOG4CXX_AUTO_TRACE(logger_);
   if (!thread_->start()) {
     LOG4CXX_ERROR(logger_,
                   "USB device scanner thread start failed, error code");

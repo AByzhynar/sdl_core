@@ -56,8 +56,7 @@ class UsbHandler {
   void StartControlTransferSequence(UsbControlTransferSequence* sequence,
                                     PlatformUsbDevice* device);
   TransportAdapter::Error Init();
-
- public:
+  TransportAdapter::Error Run();
   void CloseDeviceHandle(libusb_device_handle* device_handle);
 
  private:
