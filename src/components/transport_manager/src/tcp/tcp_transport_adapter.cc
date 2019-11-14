@@ -145,7 +145,10 @@ bool TcpTransportAdapter::Restore() {
        i != devices_dictionary.end();
        ++i) {
     const Json::Value device_dictionary = *i;
-    std::string name = device_dictionary["name"].asString();
+    std::string name;
+    //    if (device_dictionary["name"].isString()) {
+    name = device_dictionary["name"].asString();
+    //  }
     std::string address_record = device_dictionary["address"].asString();
     in_addr_t address = inet_addr(address_record.c_str());
     TcpDevice* tcp_device = new TcpDevice(address, name);

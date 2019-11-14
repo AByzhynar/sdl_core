@@ -54,6 +54,10 @@ static inline char *
 duplicateStringValue( const char *value, 
                       unsigned int length = unknown )
 {
+   if(!value) {
+       return nullptr;
+   }
+
    if ( length == unknown )
       length = (unsigned int)strlen(value);
    char *newString = static_cast<char *>( malloc( length + 1 ) );
@@ -185,7 +189,10 @@ Value::CZString::operator =( const CZString &other )
 bool 
 Value::CZString::operator<( const CZString &other ) const 
 {
-   if ( cstr_ )
+   printf("\n");
+   printf("CSTR: %s\n", cstr_);
+   printf("OTH.CSTR: %s\n", other.cstr_);
+   if ( cstr_ && other.cstr_)
       return strcmp( cstr_, other.cstr_ ) < 0;
    return index_ < other.index_;
 }
@@ -193,7 +200,7 @@ Value::CZString::operator<( const CZString &other ) const
 bool 
 Value::CZString::operator==( const CZString &other ) const 
 {
-   if ( cstr_ )
+   if ( cstr_ && other.cstr_)
       return strcmp( cstr_, other.cstr_ ) == 0;
    return index_ == other.index_;
 }
