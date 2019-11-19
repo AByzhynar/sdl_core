@@ -350,7 +350,7 @@ TEST_F(TcpAdapterTest, StoreDataWithSeveralDevices_RestoreData) {
 TEST_F(TcpAdapterTest, NotifyTransportConfigUpdated) {
   MockTransportAdapterListener mock_adapter_listener;
 
-  MockTCPTransportAdapter transport_adapter(
+  TcpTransportAdapter transport_adapter(
       port, last_state_, transport_manager_settings);
   transport_adapter.AddListener(&mock_adapter_listener);
 
@@ -365,7 +365,7 @@ TEST_F(TcpAdapterTest, NotifyTransportConfigUpdated) {
 }
 
 TEST_F(TcpAdapterTest, GetTransportConfiguration) {
-  MockTCPTransportAdapter transport_adapter(
+  TcpTransportAdapter transport_adapter(
       port, last_state_, transport_manager_settings);
 
   TransportConfig config;
