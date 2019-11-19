@@ -36,6 +36,7 @@
 #ifndef SRC_COMPONENTS_TRANSPORT_MANAGER_INCLUDE_TRANSPORT_MANAGER_TRANSPORT_MANAGER_DEFAULT_H_
 #define SRC_COMPONENTS_TRANSPORT_MANAGER_INCLUDE_TRANSPORT_MANAGER_TRANSPORT_MANAGER_DEFAULT_H_
 
+#include "transport_manager/transport_adapter/transport_adapter.h"
 #include "transport_manager/transport_manager_impl.h"
 
 namespace resumption {
@@ -63,6 +64,18 @@ class TransportManagerDefault : public TransportManagerImpl {
    */
   virtual ~TransportManagerDefault();
 
+#if defined(BUILD_TESTS)
+  void set_ta_bluetooth(transport_adapter::TransportAdapter* ta_bluetooth);
+  void set_ta_tcp(transport_adapter::TransportAdapter* ta_tcp);
+  void set_ta_usb(transport_adapter::TransportAdapter* ta_usb);
+  void set_ta_cloud(transport_adapter::TransportAdapter* ta_cloud);
+#endif  // BUILD_TESTS
+
+ private:
+  transport_adapter::TransportAdapter* ta_bluetooth_;
+  transport_adapter::TransportAdapter* ta_tcp_;
+  transport_adapter::TransportAdapter* ta_usb_;
+  transport_adapter::TransportAdapter* ta_cloud_;
   DISALLOW_COPY_AND_ASSIGN(TransportManagerDefault);
 };
 }  // namespace transport_manager
