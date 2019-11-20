@@ -82,10 +82,12 @@ ThreadedSocketConnection::~ThreadedSocketConnection() {
 
 void ThreadedSocketConnection::StopAndJoinThread() {
   Disconnect();
-  thread_->join();
-  delete thread_->delegate();
-  threads::DeleteThread(thread_);
-  thread_ = NULL;
+  if (thread_) {
+    thread_->join();
+    delete thread_->delegate();
+    threads::DeleteThread(thread_);
+    thread_ = NULL;
+  }
 }
 
 void ThreadedSocketConnection::Abort() {
@@ -165,6 +167,11 @@ TransportAdapter::Error ThreadedSocketConnection::Disconnect() {
   terminate_flag_ = true;
   ShutdownAndCloseSocket();
   return Notify();
+}
+
+void ThreadedSocketConnection::Terminate() {
+  LOG4CXX_AUTO_TRACE(logger_);
+  StopAndJoinThread();
 }
 
 void ThreadedSocketConnection::threadMain() {

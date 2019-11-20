@@ -64,6 +64,11 @@ class Connection {
    * @brief Disconnect the current connection.
    */
   virtual TransportAdapter::Error Disconnect() = 0;
+
+  /**
+   * @brief Terminate the current connection.
+   */
+  virtual void Terminate() {}
 };
 
 typedef std::shared_ptr<Connection> ConnectionSPtr;
