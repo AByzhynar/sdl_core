@@ -62,7 +62,7 @@ ThreadedSocketConnection::ThreadedSocketConnection(
     , unexpected_disconnect_(false)
     , device_uid_(device_id)
     , app_handle_(app_handle)
-    , thread_(NULL) {
+    , thread_(nullptr) {
   const std::string thread_name = std::string("Socket ") + device_handle();
   thread_ = threads::CreateThread(thread_name.c_str(),
                                   new SocketConnectionDelegate(this));
@@ -70,7 +70,7 @@ ThreadedSocketConnection::ThreadedSocketConnection(
 
 ThreadedSocketConnection::~ThreadedSocketConnection() {
   LOG4CXX_AUTO_TRACE(logger_);
-  DCHECK(NULL == thread_);
+  DCHECK(nullptr == thread_);
 
   if (-1 != read_fd_) {
     close(read_fd_);
@@ -86,7 +86,7 @@ void ThreadedSocketConnection::StopAndJoinThread() {
     thread_->join();
     delete thread_->delegate();
     threads::DeleteThread(thread_);
-    thread_ = NULL;
+    thread_ = nullptr;
   }
 }
 
@@ -176,7 +176,7 @@ void ThreadedSocketConnection::Terminate() {
 
 void ThreadedSocketConnection::threadMain() {
   LOG4CXX_AUTO_TRACE(logger_);
-  ConnectError* connect_error = NULL;
+  ConnectError* connect_error = nullptr;
   if (!Establish(&connect_error)) {
     LOG4CXX_ERROR(logger_, "Connection Establish failed");
     delete connect_error;

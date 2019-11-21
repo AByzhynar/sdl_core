@@ -77,7 +77,7 @@ class ThreadedSocketConnection : public Connection {
   /**
    * @brief Terminate the current connection.
    */
-  void Terminate() override;
+  void Terminate() OVERRIDE;
 
   /**
    * @brief Start thread creation.
